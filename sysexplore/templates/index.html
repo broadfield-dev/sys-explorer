@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File System Explorer</title>
+    <title>Sys-Explorer</title> <!-- Changed for polish -->
     <style>
+        /* ... all the CSS styles remain the same ... */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; background-color: #f8f9fa; display: flex; flex-direction: column; min-height: 100vh; }
         .container { display: flex; flex: 1; }
         .explorer-pane { flex: 1; min-width: 400px; max-width: 50%; padding: 2em; background-color: white; border-right: 1px solid #dee2e6; overflow-y: auto; }
@@ -17,10 +18,7 @@
         a { text-decoration: none; color: #007bff; }
         a:hover { text-decoration: underline; }
         .file-icon, .folder-icon, .up-icon { margin-right: 8px; }
-        .submit-btn, .action-btn {
-            background-color: #28a745; color: white; padding: 10px 20px;
-            border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-top: 1em; text-decoration: none; display: inline-block;
-        }
+        .submit-btn, .action-btn { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9em; margin-top: 1em; margin-right: 0.5em; text-decoration: none; display: inline-block; }
         .submit-btn:hover { background-color: #218838; }
         .action-btn { background-color: #007bff; }
         .action-btn:hover { background-color: #0069d9; }
@@ -32,6 +30,7 @@
     </style>
 </head>
 <body>
+
 
 <div class="container">
     <div class="explorer-pane">
