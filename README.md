@@ -105,6 +105,3 @@ The server will start, and you can access it at **http://127.0.0.1:5000**.
 
 This application is intended for **local use only**. Do not expose it to the public internet without implementing proper authentication and further security hardening. By default, it is restricted to your user's home directory.
 
-## License
-
-This project is licensed under the MIT License.
