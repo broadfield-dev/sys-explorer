@@ -7,7 +7,6 @@ from repo_to_md import create_markdown_document
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
 
-# Using '/' as the base directory as you specified
 BASE_DIR = os.path.realpath('/')
 
 def get_directory_contents(path):
@@ -114,6 +113,5 @@ def main():
     
     app.run(host=args.host, port=args.port, debug=args.debug)
 
-# --- CORRECTED: This now calls the main function ---
 if __name__ == '__main__':
     main()
