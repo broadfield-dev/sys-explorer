@@ -1,13 +1,14 @@
 import os
 import io
+import argparse  # <-- ADDED: To handle command-line arguments
 from flask import Flask, render_template, request, redirect, url_for, flash
 from repo_to_md import create_markdown_document
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
 
-#BASE_DIR = os.path.expanduser('~')
-BASE_DIR = os.path.expanduser('/')
+# Using '/' as the base directory as you specified
+BASE_DIR = os.path.realpath('/')
 
 def get_directory_contents(path):
     dirs = []
@@ -15,7 +16,6 @@ def get_directory_contents(path):
     try:
         for item in sorted(os.listdir(path), key=str.lower):
             full_path = os.path.join(path, item)
-            # Add a check to avoid listing inaccessible items
             if not os.access(full_path, os.R_OK):
                 continue
             if os.path.isdir(full_path):
@@ -28,14 +28,11 @@ def get_directory_contents(path):
     return dirs, files
 
 def prepare_files_for_repo_to_md(selected_paths):
-    """
-    Takes a list of file/folder paths and returns a list of file-like objects
-    for repo_to_md, handling recursion for directories.
-    """
     file_objects = []
     for path in selected_paths:
         safe_path = os.path.realpath(path)
-        if not safe_path.startswith(os.path.realpath(BASE_DIR)):
+        # Security check remains important
+        if not safe_path.startswith(BASE_DIR):
             print(f"Skipping insecure path: {path}")
             continue
 
@@ -65,12 +62,7 @@ def prepare_files_for_repo_to_md(selected_paths):
 
 @app.route('/', methods=['GET', 'POST'])
 def explorer():
-    """
-    Handles both displaying the explorer (GET) and processing the selection (POST).
-    """
     markdown_result = None
-    
-    # --- Part 1: Handle POST request (form submission) ---
     if request.method == 'POST':
         selected_items = request.form.getlist('selected_items')
         if not selected_items:
@@ -80,14 +72,13 @@ def explorer():
             if not file_objects:
                 flash("No readable files were found in the selection.", "error")
             else:
-                # Generate the markdown document and store it for rendering
                 markdown_result = create_markdown_document(files=file_objects)
 
     req_path = request.args.get('path', BASE_DIR)
     
     safe_path = os.path.realpath(req_path)
-    if not safe_path.startswith(os.path.realpath(BASE_DIR)):
-        flash("Access denied: You cannot navigate outside the home directory.", "error")
+    if not safe_path.startswith(BASE_DIR):
+        flash(f"Access denied: You cannot navigate outside the base directory.", "error")
         return redirect(url_for('explorer', path=BASE_DIR))
     
     if not os.path.exists(safe_path) or not os.path.isdir(safe_path):
@@ -97,7 +88,7 @@ def explorer():
     dirs, files = get_directory_contents(safe_path)
     
     parent_path = None
-    if safe_path != os.path.realpath(BASE_DIR):
+    if safe_path != BASE_DIR:
         parent_path = os.path.dirname(safe_path)
 
     return render_template('index.html', 
@@ -107,5 +98,22 @@ def explorer():
                            files=files,
                            markdown_result=markdown_result)
 
+def main():
+    """
+    This is the entry point function for the command-line tool.
+    """
+    parser = argparse.ArgumentParser(description="Run the Sys-Explorer web app.")
+    parser.add_argument('--host', default='127.0.0.1', help='The host to bind to.')
+    parser.add_argument('--port', type=int, default=5000, help='The port to listen on.')
+    parser.add_argument('--debug', action='store_true', help='Enable Flask debug mode.')
+    args = parser.parse_args()
+
+    print(f" * Starting Sys-Explorer server at http://{args.host}:{args.port}")
+    print(" * Navigate your file system, select files/folders, and generate markdown.")
+    print(" * Press CTRL+C to quit.")
+    
+    app.run(host=args.host, port=args.port, debug=args.debug)
+
+# --- CORRECTED: This now calls the main function ---
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    main()
