@@ -1,0 +1,3 @@
+# In sys-explorer/MANIFEST.in
+
+graft sysexplore/templates
