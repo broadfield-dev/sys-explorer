@@ -7,29 +7,29 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
-# Read the requirements from requirements.txt
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+# We no longer need to read requirements.txt for install_requires
+# as we will define them directly here.
 
 setup(
-    # The name of the project on PyPI and for pip
     name='sys-explorer',
-    version='0.1.0',
+    version='0.1.1', # Bumped version for the change
     author='Your Name',
     author_email='your.email@example.com',
     description='A web-based tool to explore local files and generate a combined markdown document.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    # The URL to your GitHub repo
     url='https://github.com/broadfield-dev/sys-explorer',
-    # find_packages() will automatically discover the 'sysexplore' package
     packages=find_packages(),
     include_package_data=True,
-    install_requires=requirements,
-    # This creates the command-line tool
+    
+    # --- THIS IS THE KEY CHANGE ---
+    install_requires=[
+        'Flask',
+        'repo-to-md @ git+https://github.com/broadfield-dev/repo_to_md.git'
+    ],
+    
     entry_points={
         'console_scripts': [
-            # 'command_name = package_name.module_name:function_name'
             'sysexplorer=sysexplore.app:main',
         ],
     },
