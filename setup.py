@@ -21,7 +21,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     # The URL to your GitHub repo
-    url='https://github.com/your-username/sys-explorer',
+    url='https://github.com/broadfield-dev/sys-explorer',
     # find_packages() will automatically discover the 'sysexplore' package
     packages=find_packages(),
     include_package_data=True,
