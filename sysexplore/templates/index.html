@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File System Explorer</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; background-color: #f8f9fa; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { display: flex; flex: 1; }
+        .explorer-pane { flex: 1; min-width: 400px; max-width: 50%; padding: 2em; background-color: white; border-right: 1px solid #dee2e6; overflow-y: auto; }
+        .result-pane { flex: 2; padding: 2em; overflow-y: auto; background-color: #fff; }
+        h1, h2 { color: #333; }
+        code { background-color: #e9ecef; padding: 0.2em 0.4em; border-radius: 3px; }
+        ul { list-style-type: none; padding-left: 0; }
+        li { margin-bottom: 0.5em; display: flex; align-items: center; }
+        li input { margin-right: 10px; }
+        a { text-decoration: none; color: #007bff; }
+        a:hover { text-decoration: underline; }
+        .file-icon, .folder-icon, .up-icon { margin-right: 8px; }
+        .submit-btn, .action-btn {
+            background-color: #28a745; color: white; padding: 10px 20px;
+            border: none; border-radius: 5px; cursor: pointer; font-size: 1em; margin-top: 1em; text-decoration: none; display: inline-block;
+        }
+        .submit-btn:hover { background-color: #218838; }
+        .action-btn { background-color: #007bff; }
+        .action-btn:hover { background-color: #0069d9; }
+        .controls { margin-bottom: 1em; }
+        .controls button { padding: 5px 10px; cursor: pointer; }
+        .flash-error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border-radius: .25rem; }
+        pre { background-color: #e9ecef; padding: 1em; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; max-height: 70vh; overflow-y: auto; }
+        pre code { background-color: transparent; padding: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="explorer-pane">
+        <h1>File System Explorer</h1>
+        <h2>Path: <code>{{ current_path }}</code></h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'error' %}
+                        <div class="flash-error">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="/?path={{ current_path }}" method="post">
+            <div class="controls">
+                <button type="button" onclick="toggleCheckboxes(true)">Select All</button>
+                <button type="button" onclick="toggleCheckboxes(false)">Deselect All</button>
+            </div>
+
+            <ul>
+                {% if parent_path %}
+                <li><span class="up-icon">⬆️</span><a href="/?path={{ parent_path }}">.. (Up a directory)</a></li>
+                {% endif %}
+                {% for dir in dirs %}
+                <li><input type="checkbox" name="selected_items" value="{{ dir.path }}" id="cb-d-{{ loop.index }}"><label for="cb-d-{{ loop.index }}"><span class="folder-icon">📁</span><a href="/?path={{ dir.path }}">{{ dir.name }}</a></label></li>
+                {% endfor %}
+                {% for file in files %}
+                <li><input type="checkbox" name="selected_items" value="{{ file.path }}" id="cb-f-{{ loop.index }}"><label for="cb-f-{{ loop.index }}"><span class="file-icon">📄</span>{{ file.name }}</label></li>
+                {% endfor %}
+            </ul>
+            <button type="submit" class="submit-btn">Generate Markdown</button>
+        </form>
+    </div>
+
+    <div class="result-pane">
+        {% if markdown_result %}
+            <h2>Generated Markdown</h2>
+            <button class="action-btn" onclick="downloadMarkdown()">Download as repo_summary.md</button>
+            <hr>
+            {% if markdown_result.startswith("Error:") %}
+                <p class="flash-error">{{ markdown_result }}</p>
+            {% else %}
+                <pre><code id="markdown-content">{{ markdown_result }}</code></pre>
+            {% endif %}
+        {% else %}
+            <h2>Result Pane</h2>
+            <p>Select files or folders on the left and click "Generate Markdown" to see the output here.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function toggleCheckboxes(check) {
+        const checkboxes = document.querySelectorAll('input[name="selected_items"]');
+        checkboxes.forEach(cb => cb.checked = check);
+    }
+
+    function downloadMarkdown() {
+        const contentElement = document.getElementById('markdown-content');
+        if (!contentElement) {
+            console.error('Markdown content not found.');
+            return;
+        }
+        const content = contentElement.innerText;
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'repo_summary.md';
+        document.body.appendChild(a); // Required for Firefox
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+</body>
+</html>
